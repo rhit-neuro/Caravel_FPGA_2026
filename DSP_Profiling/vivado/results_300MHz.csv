@@ -1,0 +1,14 @@
+design,frequency_mhz,passes,setup_slack_ns,hold_slack_ns,pulse_width_slack_ns,dsp_count,bram_count,lut_count
+add_1stage,300,yes,1.694,0.113,1.391,1,0,0
+add_2stages,300,yes,2.128,0.071,1.391,1,0,0
+multiply18_1stage,300,yes,0.897,0.100,1.391,1,0,0
+multiply18_2stages,300,yes,1.362,0.100,1.391,1,0,0
+multiply18_3stages,300,yes,2.138,0.107,0.904,1,0,0
+multiply18_4stages,300,yes,2.138,0.107,0.904,1,0,0
+multiply16_1stage,300,yes,0.936,0.100,1.391,1,0,0
+multiply16_2stages,300,yes,1.362,0.100,1.391,1,0,0
+multiply16_3stages,300,yes,2.138,0.107,0.904,1,0,0
+multiply16_4stages,300,yes,2.138,0.107,0.904,1,0,0
+power_shift_add,300,yes,0.517,0.088,1.391,1,0,207
+bram_read_1stage,300,yes,1.501,0.088,1.089,0,1,0
+bram_read_2stages,300,yes,2.204,0.090,1.089,0,1,0
