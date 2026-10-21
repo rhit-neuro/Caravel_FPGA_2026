@@ -1,0 +1,6 @@
+design,dsp_count,lut_count,flip_flop_count,slack_at_12mhz_ns,dsp_registers_used
+add_18bit,1,0,57,81.260,A0 B0 C0 M0 P1
+add_32bit,1,0,99,81.574,A0 B0 C0 M0 P1
+multiply_18x18,1,0,57,80.692,A0 B0 C0 M0 P1
+multiply_16x16,1,0,51,80.857,A0 B0 C0 M0 P1
+power_shift_add,1,207,177,80.476,A1 B1 C1 M0 P0
