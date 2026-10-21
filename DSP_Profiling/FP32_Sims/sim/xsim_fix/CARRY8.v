@@ -3,6 +3,7 @@
 //               data/verilog/src/unisims/CARRY8.v) with ONE change, used ONLY
 //               for the post-route timing simulations in run_timing_sweep.tcl
 // =============================================================================
+// *** AI DISCLOSURE: modified from AMD's CARRY8 model with support from Claude Opus 5.5 (Anthropic) in Claude Code, Oct 21, 2026 -- carry fix, comments. ***
 // WHAT CARRY8 IS
 //   The chip's built-in 8-bit carry chain (the fast "ripple carry" next to the
 //   LUTs). Synthesis uses it for every adder/comparator. Bit by bit:

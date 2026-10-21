@@ -2,6 +2,7 @@
 // =============================================================================
 // bram_test.v  --  a 1024 x 32-bit memory built from Block RAM (BRAM)
 // =============================================================================
+// *** AI DISCLOSURE: written with support from Claude (Anthropic) in Claude Code, Oct 20-21, 2026 -- code, comments and debugging. ***
 // BRAM = small, fast memory blocks spread across the FPGA (36 Kbit each;
 // the KR260's chip has 144 of them). In C terms this module is:
 //

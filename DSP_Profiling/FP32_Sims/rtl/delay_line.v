@@ -2,6 +2,7 @@
 // =============================================================================
 // delay_line.v  --  delay a signal by DEPTH clock cycles
 // =============================================================================
+// *** AI DISCLOSURE: written with support from Claude (Anthropic) in Claude Code, Oct 20-21, 2026 -- code, comments and debugging. ***
 // In a pipeline, some signals just "ride along" without being changed (for
 // example the valid flag, or a sign bit that is only needed at the end).
 // They still have to arrive at the end at the same time as the data they

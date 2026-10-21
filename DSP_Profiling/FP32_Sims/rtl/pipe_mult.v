@@ -2,6 +2,7 @@
 // =============================================================================
 // pipe_mult.v  --  pipelined unsigned multiplier:  p = a * b, STAGES cycles later
 // =============================================================================
+// *** AI DISCLOSURE: written with support from Claude (Anthropic) in Claude Code, Oct 20-21, 2026 -- code, comments and debugging. ***
 // WHY THIS MODULE EXISTS (from the 10/21 timing report)
 //   In version 1 the multiplies had only one register after them. A wide
 //   multiply is built from several DSP48E2 slices chained together (each

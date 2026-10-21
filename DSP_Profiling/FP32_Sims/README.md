@@ -2,6 +2,8 @@
 
 Measures how long 32-bit floating-point add, multiply, shift and exponential (plus BRAM, URAM and DDR4 reads) take on the Kria K26 chip (`xck26-sfvc784-2LV-c`), and at which clock speeds they still work. Every result below comes from a full Vivado 2023.2 build (synthesis, placement, routing) and timing simulation at each clock.
 
+> **🤖 AI disclosure:** The RTL, testbench, scripts, debugging and this write-up were produced with support from **Claude (Anthropic) in Claude Code**, Oct 20–21, 2026. `sim/xsim_fix/CARRY8.v` is AMD's CARRY8 model modified with Claude Opus 5.5.
+
 ## Summary
 
 | Operation | Cycles | Fastest clock that passes | Time at that clock | Hardware (at 400 MHz) |

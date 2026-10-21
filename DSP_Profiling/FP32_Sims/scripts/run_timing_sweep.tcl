@@ -3,6 +3,7 @@
 #                           frequency, then measure latency + correctness
 #                           with real delays                            (v2)
 # =============================================================================
+# *** AI DISCLOSURE: written with support from Claude (Anthropic) in Claude Code, Oct 20-21, 2026 -- code, comments and debugging. ***
 # Run from the FP32_Sims folder, in the Vivado Tcl Shell (or any shell where
 # Vivado is set up):
 #     vivado -mode batch -source scripts/run_timing_sweep.tcl

@@ -2,6 +2,7 @@
 // =============================================================================
 // fp_add.v  --  32-bit floating-point adder:  y = a + b          (version 2)
 // =============================================================================
+// *** AI DISCLOSURE: written with support from Claude (Anthropic) in Claude Code, Oct 20-21, 2026 -- code, comments and debugging. ***
 // FLOAT32 REFRESHER (IEEE-754 single precision, same as C's 'float')
 //
 //     bit 31    bits 30..23      bits 22..0

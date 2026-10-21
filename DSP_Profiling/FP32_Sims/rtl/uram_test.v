@@ -2,6 +2,7 @@
 // =============================================================================
 // uram_test.v  --  a 4096 x 32-bit memory built from UltraRAM (URAM)
 // =============================================================================
+// *** AI DISCLOSURE: written with support from Claude (Anthropic) in Claude Code, Oct 20-21, 2026 -- code, comments and debugging. ***
 // URAM = bigger memory blocks than BRAM (288 Kbit each, 8x a BRAM; the
 // KR260's chip has 64 of them). Good for storing lots of neuron state.
 // Same idea as bram_test.v:

@@ -2,6 +2,7 @@
 // =============================================================================
 // fp_exp.v  --  32-bit floating-point exponential:  y = e^a        (version 2)
 // =============================================================================
+// *** AI DISCLOSURE: written with support from Claude (Anthropic) in Claude Code, Oct 20-21, 2026 -- code, comments and debugging. ***
 // THE MATH TRICK (shift + table + small polynomial)
 //   Computers are good at powers of 2, so rewrite e^x as a power of 2:
 //

@@ -2,6 +2,7 @@
 // =============================================================================
 // fp_shift.v  --  floating-point "shift":  y = a * 2^k
 // =============================================================================
+// *** AI DISCLOSURE: written with support from Claude (Anthropic) in Claude Code, Oct 20-21, 2026 -- code, comments and debugging. ***
 // On an integer, shifting left by k multiplies by 2^k (x << 3 == x * 8).
 // On a float, the mantissa does not move at all -- we just add k to the
 // exponent field. Same as C's ldexpf(a, k).

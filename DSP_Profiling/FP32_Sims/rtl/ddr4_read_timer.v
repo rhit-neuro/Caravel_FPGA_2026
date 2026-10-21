@@ -2,6 +2,7 @@
 // =============================================================================
 // ddr4_read_timer.v  --  read one word from DDR4 and count how long it took
 // =============================================================================
+// *** AI DISCLOSURE: written with support from Claude (Anthropic) in Claude Code, Oct 20-21, 2026 -- code, comments and debugging. ***
 // WHERE DDR4 IS ON THE KR260
 //   The 4 GB of DDR4 is wired to the Zynq's processor side (the "PS"), not
 //   to the FPGA fabric (the "PL") where our logic lives. Our logic can only

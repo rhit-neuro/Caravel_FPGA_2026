@@ -2,6 +2,7 @@
 // =============================================================================
 // fp_timing_top.v  --  PARENT MODULE for the KR260 operation-timing study (v2)
 // =============================================================================
+// *** AI DISCLOSURE: written with support from Claude (Anthropic) in Claude Code, Oct 20-21, 2026 -- code, comments and debugging. ***
 // This file does no math itself. It is like main() in C: it creates one copy
 // ("instance") of each unit we want to time and wires them to the top-level
 // pins. Vivado then times every unit in one build.

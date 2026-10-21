@@ -2,6 +2,7 @@
 // =============================================================================
 // fp_mul.v  --  32-bit floating-point multiplier:  y = a * b      (version 2)
 // =============================================================================
+// *** AI DISCLOSURE: written with support from Claude (Anthropic) in Claude Code, Oct 20-21, 2026 -- code, comments and debugging. ***
 // (See fp_add.v for the float32 bit layout.)
 //
 // HOW FLOAT MULTIPLICATION WORKS -- scientific notation again:

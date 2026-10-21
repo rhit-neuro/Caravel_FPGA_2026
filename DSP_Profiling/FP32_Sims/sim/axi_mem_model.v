@@ -2,6 +2,7 @@
 // =============================================================================
 // axi_mem_model.v  --  SIMULATION ONLY stand-in for the PS + DDR4
 // =============================================================================
+// *** AI DISCLOSURE: written with support from Claude (Anthropic) in Claude Code, Oct 20-21, 2026 -- code, comments and debugging. ***
 // This is NOT real DDR4 timing. It only lets us check that ddr4_read_timer
 // does the AXI handshake correctly and counts cycles correctly. It answers
 // every read after a made-up delay of LATENCY cycles, and the data it

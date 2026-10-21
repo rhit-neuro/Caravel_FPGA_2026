@@ -2,6 +2,7 @@
 // =============================================================================
 // tb_fp_timing_top.v  --  testbench for fp_timing_top                  (v2)
 // =============================================================================
+// *** AI DISCLOSURE: written with support from Claude (Anthropic) in Claude Code, Oct 20-21, 2026 -- code, comments and debugging. ***
 // A testbench is a Verilog program that never becomes hardware. It plays
 // the role of the outside world: makes a clock, feeds inputs, and checks
 // outputs.
