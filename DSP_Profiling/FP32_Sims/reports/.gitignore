@@ -1,0 +1,6 @@
+# Outputs of scripts/run_timing_sweep.tcl that are too big for git
+# (routed netlists, SDF delay files, compiled simulator snapshots).
+sim_*/
+rtl_sim/
+*.log
+*.rpt
