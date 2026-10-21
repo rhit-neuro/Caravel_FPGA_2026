@@ -1,0 +1,11 @@
+design,frequency_mhz,passes,setup_slack_ns,hold_slack_ns,pulse_width_slack_ns,dsp_count,bram_count,uram_count,lut_count
+add32_1stage,200,yes,3.428,0.113,2.225,1,0,0,0
+add32_2stages,200,yes,3.664,0.071,2.225,1,0,0,0
+multiply32_1stage,200,yes,1.592,0.097,2.225,4,0,0,31
+multiply32_2stages,200,yes,2.109,0.097,2.225,4,0,0,31
+multiply32_3stages,200,yes,1.896,0.059,1.738,4,0,0,31
+multiply32_4stages,200,yes,2.109,0.086,1.738,4,0,0,31
+power32_shift_add,200,yes,2.675,0.058,2.225,0,0,0,296
+divide16,200,yes,1.746,0.067,2.225,1,0,0,130
+divide18,200,yes,1.802,0.057,2.225,1,0,0,159
+divide32,200,yes,1.442,0.058,2.225,1,0,0,274

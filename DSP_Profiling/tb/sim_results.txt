@@ -41,6 +41,45 @@ PASS: test 15 - BRAM write + read
 PASS: test 16 - BRAM write + read
   BRAM address 1023: wrote  -0.75000, read  -0.75000 | write: 1 cycle, read stages 1/2: 1/2 cycles
 
-0 failed checks out of 84
-PASS: all 16 tests
-tb/tb_dsp_profile.v:398: $finish called at 2476000 (1ps)
+--- 6. URAM write then read, 4096 x 72 ---
+PASS: test 17 - URAM write + read
+  URAM address    0: wrote 000000000000000001, read 000000000000000001 | write: 1 cycle, read stages 1/2/3: 1/2/3 cycles
+PASS: test 18 - URAM write + read
+  URAM address  100: wrote a5deadbeef01234567, read a5deadbeef01234567 | write: 1 cycle, read stages 1/2/3: 1/2/3 cycles
+PASS: test 19 - URAM write + read
+  URAM address 4095: wrote ffffffffffffffffff, read ffffffffffffffffff | write: 1 cycle, read stages 1/2/3: 1/2/3 cycles
+
+--- 7. 32-bit fixed point, Q16.16 ---
+PASS: test 20 - 32-bit addition
+  ADD  Q16.16       1.5000 +      2.2500 =      3.7500 | stages 1/2: 1/2 cycles
+PASS: test 21 - 32-bit addition
+  ADD  Q16.16      -3.7500 +      1.2500 =     -2.5000 | stages 1/2: 1/2 cycles
+PASS: test 22 - 32-bit addition
+  ADD  Q16.16     100.5000 +  -1234.1250 =  -1133.6250 | stages 1/2: 1/2 cycles
+PASS: test 23 - 32x32 multiply
+  MULT 32x32 Q16.16      1.5000 x     0.7500 =      1.1250 | stages 1/2/3/4: 1/2/3/4 cycles
+PASS: test 24 - 32x32 multiply
+  MULT 32x32 Q16.16    -12.2500 x     3.5000 =    -42.8750 | stages 1/2/3/4: 1/2/3/4 cycles
+PASS: test 25 - 32x32 multiply
+  MULT 32x32 Q16.16    100.0000 x    -0.0100 =     -0.9995 | stages 1/2/3/4: 1/2/3/4 cycles
+PASS: test 26 - 32-bit shift-add power
+  POW  Q16.16  (   1.5000)^2 =      2.2500 | 34 cycles
+PASS: test 27 - 32-bit shift-add power
+  POW  Q16.16  (  -2.0000)^3 =     -8.0000 | 66 cycles
+PASS: test 28 - 32-bit shift-add power
+  POW  Q16.16  (   1.1000)^5 =      1.6104 | 130 cycles
+
+--- 8. Division (shift-subtract), 16/18/32-bit ---
+PASS: test 29 - division
+  DIV    0.2500 /   0.5000 =   0.5000 (Q4.12)   0.50000 (Q2.16)    0.50000 (Q16.16) | 16/18/32-bit: 30/36/50 cycles
+PASS: test 30 - division
+  DIV   -1.5000 /   1.2500 =  -1.2000 (Q4.12)  -1.20000 (Q2.16)   -1.20000 (Q16.16) | 16/18/32-bit: 30/36/50 cycles
+PASS: test 31 - division
+  DIV    0.7500 /  -1.2500 =  -0.5999 (Q4.12)  -0.59999 (Q2.16)   -0.59999 (Q16.16) | 16/18/32-bit: 30/36/50 cycles
+PASS: test 32 - division
+  DIV    0.5000 /   1.5000 =   0.3333 (Q4.12)   0.33333 (Q2.16)    0.33333 (Q16.16) | 16/18/32-bit: 30/36/50 cycles
+
+171 checks run
+Tests: 32 passed, 0 failed
+PASS: all 32 tests
+tb/tb_dsp_profile.v:714: $finish called at 8056000 (1ps)

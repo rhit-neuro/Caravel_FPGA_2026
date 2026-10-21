@@ -1,0 +1,5 @@
+test,frequency_mhz,min_cycles,max_cycles,average_cycles,average_ns,errors,timed_out
+single_write,300,27,28,27.5,91.6,0,0
+single_read,300,41,157,49.5,164.8,0,0
+burst_write,300,49,50,49.1,163.8,0,0
+burst_read,300,56,152,65.6,218.6,0,0

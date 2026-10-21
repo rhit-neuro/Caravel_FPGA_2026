@@ -12,7 +12,9 @@
 //   1 = dsp_fixed_point_multiplier
 //   2 = shift_add_power   (operand_b[4:0] is the exponent)
 //   3 = bram_memory       (operand_a = address, operand_b = write data)
-// PIPELINE_STAGES is passed to the module (for the BRAM: read stages).
+//   4 = uram_memory       (operand_a = address, operand_b = write data)
+//   5 = shift_subtract_divider (operand_a / operand_b)
+// PIPELINE_STAGES is passed to the module (for the memories: read stages).
 //==============================================================================
 module timing_harness #(
     parameter OPERATION       = 0,
@@ -83,6 +85,31 @@ module timing_harness #(
                 .busy(),
                 .done(module_output_valid),
                 .result(module_result));
+        end else if (OPERATION == 5) begin : divider
+            shift_subtract_divider #(
+                .DATA_WIDTH(DATA_WIDTH), .FRACTION_BITS(FRACTION_BITS)
+            ) module_under_test (
+                .clock(clock),
+                .reset(reset),
+                .start(launch_valid),
+                .dividend(launch_operand_a),
+                .divisor(launch_operand_b),
+                .busy(),
+                .done(module_output_valid),
+                .quotient(module_result),
+                .divide_by_zero());
+        end else if (OPERATION == 4) begin : ultra_memory
+            uram_memory #(
+                .DATA_WIDTH(DATA_WIDTH), .ADDRESS_WIDTH(12), .READ_PIPELINE_STAGES(PIPELINE_STAGES)
+            ) module_under_test (
+                .clock(clock),
+                .write_enable(launch_write_enable),
+                .write_address(launch_operand_a[11:0]),
+                .write_data(launch_operand_b),
+                .read_enable(launch_valid),
+                .read_address(launch_operand_a[11:0]),
+                .read_valid(module_output_valid),
+                .read_data(module_result));
         end else begin : memory
             bram_memory #(
                 .DATA_WIDTH(DATA_WIDTH), .ADDRESS_WIDTH(10), .READ_PIPELINE_STAGES(PIPELINE_STAGES)

@@ -1,0 +1,4 @@
+design,frequency_mhz,passes,setup_slack_ns,hold_slack_ns,pulse_width_slack_ns,dsp_count,bram_count,uram_count,lut_count
+uram_read_1stage,200,yes,2.543,0.098,1.700,0,0,1,0
+uram_read_2stages,200,yes,3.116,0.092,1.700,0,0,1,0
+uram_read_3stages,200,yes,3.145,0.064,1.700,0,0,1,0
