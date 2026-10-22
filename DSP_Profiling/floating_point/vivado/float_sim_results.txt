@@ -1,0 +1,138 @@
+== add_half_1
+PASS: 1.5 + 2.25 = 3.75 (exact 3.75) | 1 cycles
+PASS: -3.75 + 0.5 = -3.25 (exact -3.25) | 1 cycles
+PASS: 0.0999756 + 0.199951 = 0.299805 (exact 0.299927) | 1 cycles
+PASS: 1000 + -0.25 = 1000 (exact 999.75) | 1 cycles
+Tests: 4 passed, 0 failed
+== add_half_6
+PASS: 1.5 + 2.25 = 3.75 (exact 3.75) | 6 cycles
+PASS: -3.75 + 0.5 = -3.25 (exact -3.25) | 6 cycles
+PASS: 0.0999756 + 0.199951 = 0.299805 (exact 0.299927) | 6 cycles
+PASS: 1000 + -0.25 = 1000 (exact 999.75) | 6 cycles
+Tests: 4 passed, 0 failed
+== add_half_11
+PASS: 1.5 + 2.25 = 3.75 (exact 3.75) | 11 cycles
+PASS: -3.75 + 0.5 = -3.25 (exact -3.25) | 11 cycles
+PASS: 0.0999756 + 0.199951 = 0.299805 (exact 0.299927) | 11 cycles
+PASS: 1000 + -0.25 = 1000 (exact 999.75) | 11 cycles
+Tests: 4 passed, 0 failed
+== add_single_1
+PASS: 1.5 + 2.25 = 3.75 (exact 3.75) | 1 cycles
+PASS: -3.75 + 0.5 = -3.25 (exact -3.25) | 1 cycles
+PASS: 0.1 + 0.2 = 0.3 (exact 0.3) | 1 cycles
+PASS: 1000 + -0.25 = 999.75 (exact 999.75) | 1 cycles
+Tests: 4 passed, 0 failed
+== add_single_6
+PASS: 1.5 + 2.25 = 3.75 (exact 3.75) | 6 cycles
+PASS: -3.75 + 0.5 = -3.25 (exact -3.25) | 6 cycles
+PASS: 0.1 + 0.2 = 0.3 (exact 0.3) | 6 cycles
+PASS: 1000 + -0.25 = 999.75 (exact 999.75) | 6 cycles
+Tests: 4 passed, 0 failed
+== add_single_11
+PASS: 1.5 + 2.25 = 3.75 (exact 3.75) | 11 cycles
+PASS: -3.75 + 0.5 = -3.25 (exact -3.25) | 11 cycles
+PASS: 0.1 + 0.2 = 0.3 (exact 0.3) | 11 cycles
+PASS: 1000 + -0.25 = 999.75 (exact 999.75) | 11 cycles
+Tests: 4 passed, 0 failed
+== multiply_half_1
+PASS: 1.5 * 2.25 = 3.375 (exact 3.375) | 1 cycles
+PASS: -3.75 * 0.5 = -1.875 (exact -1.875) | 1 cycles
+PASS: 0.0999756 * 0.199951 = 0.019989 (exact 0.0199902) | 1 cycles
+PASS: 1000 * -0.25 = -250 (exact -250) | 1 cycles
+Tests: 4 passed, 0 failed
+== multiply_half_4
+PASS: 1.5 * 2.25 = 3.375 (exact 3.375) | 4 cycles
+PASS: -3.75 * 0.5 = -1.875 (exact -1.875) | 4 cycles
+PASS: 0.0999756 * 0.199951 = 0.019989 (exact 0.0199902) | 4 cycles
+PASS: 1000 * -0.25 = -250 (exact -250) | 4 cycles
+Tests: 4 passed, 0 failed
+== multiply_half_8
+PASS: 1.5 * 2.25 = 3.375 (exact 3.375) | 8 cycles
+PASS: -3.75 * 0.5 = -1.875 (exact -1.875) | 8 cycles
+PASS: 0.0999756 * 0.199951 = 0.019989 (exact 0.0199902) | 8 cycles
+PASS: 1000 * -0.25 = -250 (exact -250) | 8 cycles
+Tests: 4 passed, 0 failed
+== multiply_single_1
+PASS: 1.5 * 2.25 = 3.375 (exact 3.375) | 1 cycles
+PASS: -3.75 * 0.5 = -1.875 (exact -1.875) | 1 cycles
+PASS: 0.1 * 0.2 = 0.02 (exact 0.02) | 1 cycles
+PASS: 1000 * -0.25 = -250 (exact -250) | 1 cycles
+Tests: 4 passed, 0 failed
+== multiply_single_3
+PASS: 1.5 * 2.25 = 3.375 (exact 3.375) | 3 cycles
+PASS: -3.75 * 0.5 = -1.875 (exact -1.875) | 3 cycles
+PASS: 0.1 * 0.2 = 0.02 (exact 0.02) | 3 cycles
+PASS: 1000 * -0.25 = -250 (exact -250) | 3 cycles
+Tests: 4 passed, 0 failed
+== multiply_single_6
+PASS: 1.5 * 2.25 = 3.375 (exact 3.375) | 6 cycles
+PASS: -3.75 * 0.5 = -1.875 (exact -1.875) | 6 cycles
+PASS: 0.1 * 0.2 = 0.02 (exact 0.02) | 6 cycles
+PASS: 1000 * -0.25 = -250 (exact -250) | 6 cycles
+Tests: 4 passed, 0 failed
+== divide_half_1
+PASS: 1.5 / 2.25 = 0.666504 (exact 0.666667) | 1 cycles
+PASS: -3.75 / 0.5 = -7.5 (exact -7.5) | 1 cycles
+PASS: 0.0999756 / 0.199951 = 0.5 (exact 0.5) | 1 cycles
+PASS: 1000 / -0.25 = -4000 (exact -4000) | 1 cycles
+Tests: 4 passed, 0 failed
+== divide_half_8
+PASS: 1.5 / 2.25 = 0.666504 (exact 0.666667) | 8 cycles
+PASS: -3.75 / 0.5 = -7.5 (exact -7.5) | 8 cycles
+PASS: 0.0999756 / 0.199951 = 0.5 (exact 0.5) | 8 cycles
+PASS: 1000 / -0.25 = -4000 (exact -4000) | 8 cycles
+Tests: 4 passed, 0 failed
+== divide_half_15
+PASS: 1.5 / 2.25 = 0.666504 (exact 0.666667) | 15 cycles
+PASS: -3.75 / 0.5 = -7.5 (exact -7.5) | 15 cycles
+PASS: 0.0999756 / 0.199951 = 0.5 (exact 0.5) | 15 cycles
+PASS: 1000 / -0.25 = -4000 (exact -4000) | 15 cycles
+Tests: 4 passed, 0 failed
+== divide_single_1
+PASS: 1.5 / 2.25 = 0.666667 (exact 0.666667) | 1 cycles
+PASS: -3.75 / 0.5 = -7.5 (exact -7.5) | 1 cycles
+PASS: 0.1 / 0.2 = 0.5 (exact 0.5) | 1 cycles
+PASS: 1000 / -0.25 = -4000 (exact -4000) | 1 cycles
+Tests: 4 passed, 0 failed
+== divide_single_14
+PASS: 1.5 / 2.25 = 0.666667 (exact 0.666667) | 14 cycles
+PASS: -3.75 / 0.5 = -7.5 (exact -7.5) | 14 cycles
+PASS: 0.1 / 0.2 = 0.5 (exact 0.5) | 14 cycles
+PASS: 1000 / -0.25 = -4000 (exact -4000) | 14 cycles
+Tests: 4 passed, 0 failed
+== divide_single_28
+PASS: 1.5 / 2.25 = 0.666667 (exact 0.666667) | 28 cycles
+PASS: -3.75 / 0.5 = -7.5 (exact -7.5) | 28 cycles
+PASS: 0.1 / 0.2 = 0.5 (exact 0.5) | 28 cycles
+PASS: 1000 / -0.25 = -4000 (exact -4000) | 28 cycles
+Tests: 4 passed, 0 failed
+== power_single_1
+PASS: 1.1 ^ 2 = 1.21 (exact 1.21) | 5 cycles
+PASS: 1.1 ^ 3 = 1.331 (exact 1.331) | 8 cycles
+PASS: 1.1 ^ 5 = 1.61051 (exact 1.61051) | 14 cycles
+PASS: 1.1 ^ 8 = 2.14359 (exact 2.14359) | 23 cycles
+Tests: 4 passed, 0 failed
+== power_single_6
+PASS: 1.1 ^ 2 = 1.21 (exact 1.21) | 10 cycles
+PASS: 1.1 ^ 3 = 1.331 (exact 1.331) | 18 cycles
+PASS: 1.1 ^ 5 = 1.61051 (exact 1.61051) | 34 cycles
+PASS: 1.1 ^ 8 = 2.14359 (exact 2.14359) | 58 cycles
+Tests: 4 passed, 0 failed
+== current_add_single
+PASS: 1.5 + 2.25 = 3.75 (exact 3.75) | 1 cycles
+PASS: -3.75 + 0.5 = -3.25 (exact -3.25) | 1 cycles
+PASS: 0.1 + 0.2 = 0.3 (exact 0.3) | 1 cycles
+PASS: 1000 + -0.25 = 999.75 (exact 999.75) | 1 cycles
+Tests: 4 passed, 0 failed
+== current_multiply_single
+PASS: 1.5 * 2.25 = 3.375 (exact 3.375) | 1 cycles
+PASS: -3.75 * 0.5 = -1.875 (exact -1.875) | 1 cycles
+PASS: 0.1 * 0.2 = 0.02 (exact 0.02) | 1 cycles
+PASS: 1000 * -0.25 = -250 (exact -250) | 1 cycles
+Tests: 4 passed, 0 failed
+== current_mac_single
+PASS: 1.5 * 2.25 + 0.5 = 3.875 (exact 3.875) | 1 cycles
+PASS: -3.75 * 0.5 + 10 = 8.125 (exact 8.125) | 1 cycles
+PASS: 0.1 * 0.2 + -0.02 = 1.86265e-09 (exact 1.86265e-09) | 1 cycles
+PASS: 1000 * -0.25 + 1 = -249 (exact -249) | 1 cycles
+Tests: 4 passed, 0 failed

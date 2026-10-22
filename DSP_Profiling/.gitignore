@@ -1,0 +1,20 @@
+# Reproducible Vivado build and simulator output
+.Xil/
+*.log
+*.jou
+*.pb
+*.dcp
+*.str
+*.wdb
+*.wcfg
+*.cache/
+*.gen/
+*.runs/
+*.sim/
+*.hw/
+ip_build/
+float_sim_build/
+synthesized.dcp
+__pycache__/
+.veritas/
+.veritas_sim/
