@@ -36,9 +36,11 @@ foreach argument $argv {
 }
 
 # Designs to build. Each row is:
-#   design_name  operation  data_width  fraction_bits  pipeline_stages
+#   design_name  operation  data_width  fraction_bits  pipeline_stages  [seed_bits  iterations]
 # operation: 0 = adder, 1 = fixed-point multiplier, 2 = shift-add power,
-#            3 = BRAM, 4 = URAM, 5 = shift-subtract divider
+#            3 = BRAM, 4 = URAM, 5 = shift-subtract divider,
+#            6 = Newton-Raphson reciprocal (pipeline_stages = stages per multiply;
+#                seed_bits/iterations only for this one)
 set designs {
     {add_1stage           0  18  16  1}
     {add_2stages          0  18  16  2}
@@ -66,6 +68,24 @@ set designs {
     {divide16             5  16  12  1}
     {divide18             5  18  16  1}
     {divide32             5  32  16  1}
+    {reciprocal16_seed8_1iter_1stage    6  16  12  1  8  1}
+    {reciprocal16_seed8_1iter_2stages   6  16  12  2  8  1}
+    {reciprocal16_seed8_1iter_3stages   6  16  12  3  8  1}
+    {reciprocal16_seed4_2iter_1stage    6  16  12  1  4  2}
+    {reciprocal16_seed4_2iter_2stages   6  16  12  2  4  2}
+    {reciprocal16_seed4_2iter_3stages   6  16  12  3  4  2}
+    {reciprocal18_seed9_1iter_1stage    6  18  16  1  9  1}
+    {reciprocal18_seed9_1iter_2stages   6  18  16  2  9  1}
+    {reciprocal18_seed9_1iter_3stages   6  18  16  3  9  1}
+    {reciprocal18_seed4_2iter_1stage    6  18  16  1  4  2}
+    {reciprocal18_seed4_2iter_2stages   6  18  16  2  4  2}
+    {reciprocal18_seed4_2iter_3stages   6  18  16  3  4  2}
+    {reciprocal32_seed8_2iter_1stage    6  32  16  1  8  2}
+    {reciprocal32_seed8_2iter_2stages   6  32  16  2  8  2}
+    {reciprocal32_seed8_2iter_3stages   6  32  16  3  8  2}
+    {reciprocal32_seed4_3iter_1stage    6  32  16  1  4  3}
+    {reciprocal32_seed4_3iter_2stages   6  32  16  2  4  3}
+    {reciprocal32_seed4_3iter_3stages   6  32  16  3  4  3}
 }
 
 # Keep only the designs whose names start with one of the given prefixes
@@ -98,25 +118,27 @@ foreach frequency_mhz $frequencies {
     puts $results "design,frequency_mhz,passes,setup_slack_ns,hold_slack_ns,pulse_width_slack_ns,dsp_count,bram_count,uram_count,lut_count"
 
     foreach design $designs {
-        lassign $design design_name operation data_width fraction_bits pipeline_stages
+        lassign $design design_name operation data_width fraction_bits pipeline_stages seed_bits iterations
+        set extra_generics {}
+        if {$seed_bits ne ""} { lappend extra_generics -generic SEED_BITS=$seed_bits -generic ITERATIONS=$iterations }
 
         # --- Build -----------------------------------------------------------
         close_project -quiet
         create_project -in_memory -part $kr260_part
         read_verilog [glob [file join $rtl_folder *.v]]
-        # Synthesis sometimes fails to start when several Vivado processes
-        # launch at the same moment, so try up to 3 times.
-        for {set attempt 1} {$attempt <= 3} {incr attempt} {
+        # Synthesis sometimes fails to start (a file-read glitch, more often when
+        # several Vivado processes launch at the same moment), so try up to 5 times.
+        for {set attempt 1} {$attempt <= 5} {incr attempt} {
             set failed [catch {
                 synth_design -top timing_harness -part $kr260_part -mode out_of_context \
                     -generic OPERATION=$operation \
                     -generic DATA_WIDTH=$data_width \
                     -generic FRACTION_BITS=$fraction_bits \
-                    -generic PIPELINE_STAGES=$pipeline_stages
+                    -generic PIPELINE_STAGES=$pipeline_stages {*}$extra_generics
             } error_message]
             if {!$failed} break
             puts "Synthesis attempt $attempt failed: $error_message"
-            if {$attempt == 3} { error $error_message }
+            if {$attempt == 5} { error $error_message }
         }
         create_clock -period $clock_period_ns -name clock [get_ports clock]
         opt_design

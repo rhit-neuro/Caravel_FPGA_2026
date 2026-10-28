@@ -1,6 +1,7 @@
 # DSP, memory and DDR profiling on the KR260
 
 - Number formats: 16-bit = Q4.12, 18-bit = Q2.16, 32-bit = Q16.16.
+- The reciprocal 1/x (Newton-Raphson) has its own document: `Reciprocal_Profiling_Results.md`.
 
 ## Summary
 
@@ -59,8 +60,8 @@ These are averages. Reads vary a lot: the slowest single read took 157 cycles at
 - **Add and multiply (up to 18 bits) are 1 cycle and pass up to 600 MHz.** At 600 MHz the margin is under 0.1 ns, so plan for 500 MHz or less in a full design. Extra stages aren't needed.
 - **32-bit multiply is the exception:** it needs 4 DSPs and tops out at 300 MHz. Extra stages don't help here, because they sit before and after the multiply, not between the 4 DSPs.
 - **Division and power are slow** (tens of cycles) because they handle one bit per cycle.
-- **On-chip memory is roughly 40–100× faster than DDR4:** 2–4 ns for BRAM/URAM against 92–195 ns for DDR4, and DDR4 timing varies.
-- **URAM is the only case where stages decide the clock:** 1 stage reaches 400 MHz, 2 or 3 stages reach 500 MHz.
+- **On-chip memory is roughly 25–100× faster than DDR4:** 2–4 ns for BRAM/URAM against 92–195 ns for DDR4, and DDR4 timing varies.
+- **Of the operations in this document, URAM is the only one where stages decide the clock:** 1 stage reaches 400 MHz, 2 or 3 stages reach 500 MHz. (They also decide it for the reciprocal and for float; see those documents.)
 
 ## Appendix: timing margins
 
@@ -127,11 +128,12 @@ These are averages. Reads vary a lot: the slowest single read took 157 cycles at
 
 **Simulation** (from `DSP_Profiling`):
 ```
-iverilog -g2012 -o tb/simulation.vvp tb/tb_dsp_profile.v rtl/dsp_adder.v rtl/dsp_fixed_point_multiplier.v rtl/shift_add_power.v rtl/shift_subtract_divider.v rtl/bram_memory.v rtl/uram_memory.v
+iverilog -g2012 -o tb/simulation.vvp tb/tb_dsp_profile.v rtl/dsp_adder.v rtl/dsp_fixed_point_multiplier.v rtl/shift_add_power.v rtl/shift_subtract_divider.v rtl/bram_memory.v rtl/uram_memory.v rtl/nr_multiply_add.v rtl/newton_raphson_core.v rtl/newton_raphson_reciprocal.v
 vvp -n tb/simulation.vvp
 ```
+The testbench also checks the reciprocal (the last three files), which makes it take about 6 minutes. Output of the last run: `tb/sim_results.txt`.
 
-**Timing builds** (from `DSP_Profiling/vivado`; add name prefixes such as `uram` to build only some designs):
+**Timing builds** (from `DSP_Profiling/vivado`; add name prefixes such as `uram` to build only some designs; each build process needs about 3.5 GB of RAM):
 ```
 D:/Vivado/2023.2/bin/vivado.bat -mode batch -nojournal -nolog -source run_profile.tcl -tclargs 100 200 300 400 500 600
 python make_results_tables.py

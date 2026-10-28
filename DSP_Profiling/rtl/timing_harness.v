@@ -14,13 +14,18 @@
 //   3 = bram_memory       (operand_a = address, operand_b = write data)
 //   4 = uram_memory       (operand_a = address, operand_b = write data)
 //   5 = shift_subtract_divider (operand_a / operand_b)
-// PIPELINE_STAGES is passed to the module (for the memories: read stages).
+//   6 = newton_raphson_reciprocal (1 / operand_a)
+// PIPELINE_STAGES is passed to the module (for the memories: read stages;
+// for the reciprocal: stages per multiply). SEED_BITS and ITERATIONS are
+// only used by the reciprocal.
 //==============================================================================
 module timing_harness #(
     parameter OPERATION       = 0,
     parameter DATA_WIDTH      = 18,
     parameter FRACTION_BITS   = 16,
-    parameter PIPELINE_STAGES = 1
+    parameter PIPELINE_STAGES = 1,
+    parameter SEED_BITS       = 8,
+    parameter ITERATIONS      = 1
 )(
     input  wire                  clock,
     input  wire                  reset,
@@ -98,6 +103,17 @@ module timing_harness #(
                 .done(module_output_valid),
                 .quotient(module_result),
                 .divide_by_zero());
+        end else if (OPERATION == 6) begin : reciprocal
+            newton_raphson_reciprocal #(
+                .DATA_WIDTH(DATA_WIDTH), .FRACTION_BITS(FRACTION_BITS), .SEED_BITS(SEED_BITS),
+                .ITERATIONS(ITERATIONS), .MULTIPLY_STAGES(PIPELINE_STAGES)
+            ) module_under_test (
+                .clock(clock),
+                .input_valid(launch_valid),
+                .operand(launch_operand_a),
+                .output_valid(module_output_valid),
+                .result(module_result),
+                .overflow());
         end else if (OPERATION == 4) begin : ultra_memory
             uram_memory #(
                 .DATA_WIDTH(DATA_WIDTH), .ADDRESS_WIDTH(12), .READ_PIPELINE_STAGES(PIPELINE_STAGES)

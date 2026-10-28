@@ -136,3 +136,129 @@ PASS: -3.75 * 0.5 + 10 = 8.125 (exact 8.125) | 1 cycles
 PASS: 0.1 * 0.2 + -0.02 = 1.86265e-09 (exact 1.86265e-09) | 1 cycles
 PASS: 1000 * -0.25 + 1 = -249 (exact -249) | 1 cycles
 Tests: 4 passed, 0 failed
+== reciprocal_ip_half_1
+PASS: 1 / 1.5 = 0.666504 (exact 0.666667) | 1 cycles
+PASS: 1 / -3.75 = -0.266602 (exact -0.266667) | 1 cycles
+PASS: 1 / 0.0999756 = 10 (exact 10.0024) | 1 cycles
+PASS: 1 / 1000 = 0.0010004 (exact 0.001) | 1 cycles
+PASS: sweep of 65536 inputs, all correct (normal inputs within 1 ulp; 57348 of 61440 correctly rounded) | 1 cycles
+Tests: 5 passed, 0 failed
+== reciprocal_ip_half_2
+PASS: 1 / 1.5 = 0.666504 (exact 0.666667) | 2 cycles
+PASS: 1 / -3.75 = -0.266602 (exact -0.266667) | 2 cycles
+PASS: 1 / 0.0999756 = 10 (exact 10.0024) | 2 cycles
+PASS: 1 / 1000 = 0.0010004 (exact 0.001) | 2 cycles
+PASS: sweep of 65536 inputs, all correct (normal inputs within 1 ulp; 57348 of 61440 correctly rounded) | 2 cycles
+Tests: 5 passed, 0 failed
+== reciprocal_ip_half_4
+PASS: 1 / 1.5 = 0.666504 (exact 0.666667) | 4 cycles
+PASS: 1 / -3.75 = -0.266602 (exact -0.266667) | 4 cycles
+PASS: 1 / 0.0999756 = 10 (exact 10.0024) | 4 cycles
+PASS: 1 / 1000 = 0.0010004 (exact 0.001) | 4 cycles
+PASS: sweep of 65536 inputs, all correct (normal inputs within 1 ulp; 57348 of 61440 correctly rounded) | 4 cycles
+Tests: 5 passed, 0 failed
+== reciprocal_ip_single_1
+PASS: 1 / 1.5 = 0.666667 (exact 0.666667) | 1 cycles
+PASS: 1 / -3.75 = -0.266667 (exact -0.266667) | 1 cycles
+PASS: 1 / 0.1 = 10 (exact 10) | 1 cycles
+PASS: 1 / 1000 = 0.001 (exact 0.001) | 1 cycles
+PASS: sweep of 20000 inputs, all correct (normal inputs within 1 ulp; 19295 of 19862 correctly rounded) | 1 cycles
+Tests: 5 passed, 0 failed
+== reciprocal_ip_single_15
+PASS: 1 / 1.5 = 0.666667 (exact 0.666667) | 15 cycles
+PASS: 1 / -3.75 = -0.266667 (exact -0.266667) | 15 cycles
+PASS: 1 / 0.1 = 10 (exact 10) | 15 cycles
+PASS: 1 / 1000 = 0.001 (exact 0.001) | 15 cycles
+PASS: sweep of 20000 inputs, all correct (normal inputs within 1 ulp; 19295 of 19862 correctly rounded) | 15 cycles
+Tests: 5 passed, 0 failed
+== reciprocal_ip_single_29
+PASS: 1 / 1.5 = 0.666667 (exact 0.666667) | 29 cycles
+PASS: 1 / -3.75 = -0.266667 (exact -0.266667) | 29 cycles
+PASS: 1 / 0.1 = 10 (exact 10) | 29 cycles
+PASS: 1 / 1000 = 0.001 (exact 0.001) | 29 cycles
+PASS: sweep of 20000 inputs, all correct (normal inputs within 1 ulp; 19295 of 19862 correctly rounded) | 29 cycles
+Tests: 5 passed, 0 failed
+== reciprocal_nr_half_seed7_1iter_1
+PASS: 1 / 1.5 = 0.666504 (exact 0.666667) | 4 cycles
+PASS: 1 / -3.75 = -0.266602 (exact -0.266667) | 4 cycles
+PASS: 1 / 0.0999756 = 10 (exact 10.0024) | 4 cycles
+PASS: 1 / 1000 = 0.0010004 (exact 0.001) | 4 cycles
+PASS: sweep of 65536 inputs, all correct (normal inputs within 1 ulp; 54716 of 61440 correctly rounded) | 4 cycles
+Tests: 5 passed, 0 failed
+== reciprocal_nr_half_seed7_1iter_2
+PASS: 1 / 1.5 = 0.666504 (exact 0.666667) | 6 cycles
+PASS: 1 / -3.75 = -0.266602 (exact -0.266667) | 6 cycles
+PASS: 1 / 0.0999756 = 10 (exact 10.0024) | 6 cycles
+PASS: 1 / 1000 = 0.0010004 (exact 0.001) | 6 cycles
+PASS: sweep of 65536 inputs, all correct (normal inputs within 1 ulp; 54716 of 61440 correctly rounded) | 6 cycles
+Tests: 5 passed, 0 failed
+== reciprocal_nr_half_seed7_1iter_3
+PASS: 1 / 1.5 = 0.666504 (exact 0.666667) | 8 cycles
+PASS: 1 / -3.75 = -0.266602 (exact -0.266667) | 8 cycles
+PASS: 1 / 0.0999756 = 10 (exact 10.0024) | 8 cycles
+PASS: 1 / 1000 = 0.0010004 (exact 0.001) | 8 cycles
+PASS: sweep of 65536 inputs, all correct (normal inputs within 1 ulp; 54716 of 61440 correctly rounded) | 8 cycles
+Tests: 5 passed, 0 failed
+== reciprocal_nr_half_seed3_2iter_1
+PASS: 1 / 1.5 = 0.666504 (exact 0.666667) | 6 cycles
+PASS: 1 / -3.75 = -0.266602 (exact -0.266667) | 6 cycles
+PASS: 1 / 0.0999756 = 10 (exact 10.0024) | 6 cycles
+PASS: 1 / 1000 = 0.0010004 (exact 0.001) | 6 cycles
+PASS: sweep of 65536 inputs, all correct (normal inputs within 1 ulp; 54716 of 61440 correctly rounded) | 6 cycles
+Tests: 5 passed, 0 failed
+== reciprocal_nr_half_seed3_2iter_2
+PASS: 1 / 1.5 = 0.666504 (exact 0.666667) | 10 cycles
+PASS: 1 / -3.75 = -0.266602 (exact -0.266667) | 10 cycles
+PASS: 1 / 0.0999756 = 10 (exact 10.0024) | 10 cycles
+PASS: 1 / 1000 = 0.0010004 (exact 0.001) | 10 cycles
+PASS: sweep of 65536 inputs, all correct (normal inputs within 1 ulp; 54716 of 61440 correctly rounded) | 10 cycles
+Tests: 5 passed, 0 failed
+== reciprocal_nr_half_seed3_2iter_3
+PASS: 1 / 1.5 = 0.666504 (exact 0.666667) | 14 cycles
+PASS: 1 / -3.75 = -0.266602 (exact -0.266667) | 14 cycles
+PASS: 1 / 0.0999756 = 10 (exact 10.0024) | 14 cycles
+PASS: 1 / 1000 = 0.0010004 (exact 0.001) | 14 cycles
+PASS: sweep of 65536 inputs, all correct (normal inputs within 1 ulp; 54716 of 61440 correctly rounded) | 14 cycles
+Tests: 5 passed, 0 failed
+== reciprocal_nr_single_seed7_2iter_1
+PASS: 1 / 1.5 = 0.666667 (exact 0.666667) | 6 cycles
+PASS: 1 / -3.75 = -0.266667 (exact -0.266667) | 6 cycles
+PASS: 1 / 0.1 = 10 (exact 10) | 6 cycles
+PASS: 1 / 1000 = 0.001 (exact 0.001) | 6 cycles
+PASS: sweep of 20000 inputs, all correct (normal inputs within 1 ulp; 18728 of 19806 correctly rounded) | 6 cycles
+Tests: 5 passed, 0 failed
+== reciprocal_nr_single_seed7_2iter_2
+PASS: 1 / 1.5 = 0.666667 (exact 0.666667) | 10 cycles
+PASS: 1 / -3.75 = -0.266667 (exact -0.266667) | 10 cycles
+PASS: 1 / 0.1 = 10 (exact 10) | 10 cycles
+PASS: 1 / 1000 = 0.001 (exact 0.001) | 10 cycles
+PASS: sweep of 20000 inputs, all correct (normal inputs within 1 ulp; 18728 of 19806 correctly rounded) | 10 cycles
+Tests: 5 passed, 0 failed
+== reciprocal_nr_single_seed7_2iter_3
+PASS: 1 / 1.5 = 0.666667 (exact 0.666667) | 14 cycles
+PASS: 1 / -3.75 = -0.266667 (exact -0.266667) | 14 cycles
+PASS: 1 / 0.1 = 10 (exact 10) | 14 cycles
+PASS: 1 / 1000 = 0.001 (exact 0.001) | 14 cycles
+PASS: sweep of 20000 inputs, all correct (normal inputs within 1 ulp; 18728 of 19806 correctly rounded) | 14 cycles
+Tests: 5 passed, 0 failed
+== reciprocal_nr_single_seed4_3iter_1
+PASS: 1 / 1.5 = 0.666667 (exact 0.666667) | 8 cycles
+PASS: 1 / -3.75 = -0.266667 (exact -0.266667) | 8 cycles
+PASS: 1 / 0.1 = 10 (exact 10) | 8 cycles
+PASS: 1 / 1000 = 0.001 (exact 0.001) | 8 cycles
+PASS: sweep of 20000 inputs, all correct (normal inputs within 1 ulp; 18802 of 19853 correctly rounded) | 8 cycles
+Tests: 5 passed, 0 failed
+== reciprocal_nr_single_seed4_3iter_2
+PASS: 1 / 1.5 = 0.666667 (exact 0.666667) | 14 cycles
+PASS: 1 / -3.75 = -0.266667 (exact -0.266667) | 14 cycles
+PASS: 1 / 0.1 = 10 (exact 10) | 14 cycles
+PASS: 1 / 1000 = 0.001 (exact 0.001) | 14 cycles
+PASS: sweep of 20000 inputs, all correct (normal inputs within 1 ulp; 18802 of 19853 correctly rounded) | 14 cycles
+Tests: 5 passed, 0 failed
+== reciprocal_nr_single_seed4_3iter_3
+PASS: 1 / 1.5 = 0.666667 (exact 0.666667) | 20 cycles
+PASS: 1 / -3.75 = -0.266667 (exact -0.266667) | 20 cycles
+PASS: 1 / 0.1 = 10 (exact 10) | 20 cycles
+PASS: 1 / 1000 = 0.001 (exact 0.001) | 20 cycles
+PASS: sweep of 20000 inputs, all correct (normal inputs within 1 ulp; 18802 of 19853 correctly rounded) | 20 cycles
+Tests: 5 passed, 0 failed

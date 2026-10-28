@@ -3,6 +3,8 @@ make_results_tables.py
 
 Prints the Markdown timing tables for DSP_Profiling_Results.md from the
 results_*MHz.csv files written by run_profile.tcl, so no number is copied by hand.
+The Newton-Raphson reciprocal tables (for Reciprocal_Profiling_Results.md) are
+printed last, under their own heading.
 
 Each cell: pass/fail and the timing margin in ns = the smaller of the setup
 slack and the pulse-width slack (hold slack is ~0.1 ns everywhere and doesn't
@@ -103,6 +105,31 @@ CYCLES = [
                                 ("uram_read_3stages", 3)]),
 ]
 
+# Newton-Raphson reciprocal: its own document (Reciprocal_Profiling_Results.md),
+# printed after the tables above. Cycles = 6 + 2 * iterations * stages.
+RECIPROCAL_CYCLES = [
+    ("Reciprocal 16-bit, 8-bit seed + 1 iteration (1–3 stages)",
+     [(f"reciprocal16_seed8_1iter_{s}", 6 + 2 * 1 * n) for n, s in [(1, "1stage"), (2, "2stages"), (3, "3stages")]]),
+    ("Reciprocal 16-bit, 4-bit seed + 2 iterations (1–3 stages)",
+     [(f"reciprocal16_seed4_2iter_{s}", 6 + 2 * 2 * n) for n, s in [(1, "1stage"), (2, "2stages"), (3, "3stages")]]),
+    ("Reciprocal 18-bit, 9-bit seed + 1 iteration (1–3 stages)",
+     [(f"reciprocal18_seed9_1iter_{s}", 6 + 2 * 1 * n) for n, s in [(1, "1stage"), (2, "2stages"), (3, "3stages")]]),
+    ("Reciprocal 18-bit, 4-bit seed + 2 iterations (1–3 stages)",
+     [(f"reciprocal18_seed4_2iter_{s}", 6 + 2 * 2 * n) for n, s in [(1, "1stage"), (2, "2stages"), (3, "3stages")]]),
+    ("Reciprocal 32-bit, 8-bit seed + 2 iterations (1–3 stages)",
+     [(f"reciprocal32_seed8_2iter_{s}", 6 + 2 * 2 * n) for n, s in [(1, "1stage"), (2, "2stages"), (3, "3stages")]]),
+    ("Reciprocal 32-bit, 4-bit seed + 3 iterations (1–3 stages)",
+     [(f"reciprocal32_seed4_3iter_{s}", 6 + 2 * 3 * n) for n, s in [(1, "1stage"), (2, "2stages"), (3, "3stages")]]),
+]
+RECIPROCAL_TABLE = [
+        (f"reciprocal{width}_{setting}_{stages}", f"Reciprocal {width}-bit, {label}, {stages_label}")
+        for width, settings in [(16, [("seed8_1iter", "8-bit seed + 1 iteration"), ("seed4_2iter", "4-bit seed + 2 iterations")]),
+                                (18, [("seed9_1iter", "9-bit seed + 1 iteration"), ("seed4_2iter", "4-bit seed + 2 iterations")]),
+                                (32, [("seed8_2iter", "8-bit seed + 2 iterations"), ("seed4_3iter", "4-bit seed + 3 iterations")])]
+        for setting, label in settings
+        for stages, stages_label in [("1stage", "1 stage"), ("2stages", "2 stages"), ("3stages", "3 stages")]
+    ]
+
 # DDR4 average cycles, measured on the board (ddr_results_<f>MHz.csv)
 DDR_LABELS = {"single_write": "DDR4 single write (16 B)", "single_read": "DDR4 single read (16 B)",
               "burst_write": "DDR4 burst write (256 B)", "burst_read": "DDR4 burst read (256 B)"}
@@ -113,13 +140,18 @@ for path in glob.glob("ddr_results_*MHz.csv"):
 
 
 def cycles_cell(options, frequency):
-    """Cycle counts of the stage options that pass at this frequency, e.g. "1–4" or "2–3"."""
+    """Cycle counts of the stage options that pass at this frequency, e.g. "1–4" or "2–3"
+    (or "10, 14" when the counts aren't consecutive)."""
     if any(results.get((design, frequency)) is None for design, _ in options):
         return "–"
     passing = [cycles for design, cycles in options if results[(design, frequency)]["passes"] == "yes"]
     if not passing:
         return "❌"
-    return str(passing[0]) if len(passing) == 1 else f"{passing[0]}–{passing[-1]}"
+    if len(passing) == 1:
+        return str(passing[0])
+    if passing == list(range(passing[0], passing[-1] + 1)):
+        return f"{passing[0]}–{passing[-1]}"
+    return ", ".join(str(cycles) for cycles in passing)
 
 
 print("\n### Clock cycles at each frequency\n")
@@ -137,3 +169,17 @@ for title, designs in TABLES.items():
     print("|---|---|" + "---|" * len(FREQUENCIES))
     for design, label in designs:
         print(f"| {label} | {resources(design)} | " + " | ".join(cell(design, f) for f in FREQUENCIES) + " |")
+
+
+print("\n\n## For Reciprocal_Profiling_Results.md")
+print("\n### Reciprocal: clock cycles at each frequency\n")
+print("| Operation | " + " | ".join(f"{f} MHz" for f in FREQUENCIES) + " |")
+print("|---|" + "---|" * len(FREQUENCIES))
+for label, options in RECIPROCAL_CYCLES:
+    print(f"| {label} | " + " | ".join(cycles_cell(options, f) for f in FREQUENCIES) + " |")
+
+print("\n### Reciprocal: timing margins\n")
+print("| Design | Uses | " + " | ".join(f"{f} MHz" for f in FREQUENCIES) + " |")
+print("|---|---|" + "---|" * len(FREQUENCIES))
+for design, label in RECIPROCAL_TABLE:
+    print(f"| {label} | {resources(design)} | " + " | ".join(cell(design, f) for f in FREQUENCIES) + " |")

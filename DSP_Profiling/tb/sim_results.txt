@@ -79,7 +79,39 @@ PASS: test 31 - division
 PASS: test 32 - division
   DIV    0.5000 /   1.5000 =   0.3333 (Q4.12)   0.33333 (Q2.16)    0.33333 (Q16.16) | 16/18/32-bit: 30/36/50 cycles
 
-171 checks run
-Tests: 32 passed, 0 failed
-PASS: all 32 tests
-tb/tb_dsp_profile.v:714: $finish called at 8056000 (1ps)
+--- 9. Reciprocal 1/x (Newton-Raphson), 16/18/32-bit ---
+PASS: test 33 - Newton-Raphson reciprocal
+  RECIP 1/  1.0000 =    1.0000 (Q4.12)   1.00000 (Q2.16)     1.00000 (Q16.16)
+        16-bit cycles, stages 1/2/3: setting 0: 8/10/12, setting 1: 10/14/18
+        18-bit cycles, stages 1/2/3: setting 0: 8/10/12, setting 1: 10/14/18
+        32-bit cycles, stages 1/2/3: setting 0: 10/14/18, setting 1: 12/18/24
+PASS: test 34 - Newton-Raphson reciprocal
+  RECIP 1/  0.7500 =    1.3333 (Q4.12)   1.33333 (Q2.16)     1.33333 (Q16.16)
+        16-bit cycles, stages 1/2/3: setting 0: 8/10/12, setting 1: 10/14/18
+        18-bit cycles, stages 1/2/3: setting 0: 8/10/12, setting 1: 10/14/18
+        32-bit cycles, stages 1/2/3: setting 0: 10/14/18, setting 1: 12/18/24
+PASS: test 35 - Newton-Raphson reciprocal
+  RECIP 1/ -1.5000 =   -0.6665 (Q4.12)  -0.66666 (Q2.16)    -0.66666 (Q16.16)
+        16-bit cycles, stages 1/2/3: setting 0: 8/10/12, setting 1: 10/14/18
+        18-bit cycles, stages 1/2/3: setting 0: 8/10/12, setting 1: 10/14/18
+        32-bit cycles, stages 1/2/3: setting 0: 10/14/18, setting 1: 12/18/24
+PASS: test 36 - Newton-Raphson reciprocal
+  RECIP 1/  1.2500 =    0.7998 (Q4.12)   0.79999 (Q2.16)     0.79999 (Q16.16)
+        16-bit cycles, stages 1/2/3: setting 0: 8/10/12, setting 1: 10/14/18
+        18-bit cycles, stages 1/2/3: setting 0: 8/10/12, setting 1: 10/14/18
+        32-bit cycles, stages 1/2/3: setting 0: 10/14/18, setting 1: 12/18/24
+PASS: test 37 - Newton-Raphson reciprocal
+  RECIP 1/  0.3000 =    3.3354 (Q4.12)   1.99998 (Q2.16, saturated)     3.33347 (Q16.16)
+        16-bit cycles, stages 1/2/3: setting 0: 8/10/12, setting 1: 10/14/18
+        18-bit cycles, stages 1/2/3: setting 0: 8/10/12, setting 1: 10/14/18
+        32-bit cycles, stages 1/2/3: setting 0: 10/14/18, setting 1: 12/18/24
+PASS: test 38 - Newton-Raphson reciprocal sweep
+  RECIP SWEEP 16-bit: 65536 inputs x 6 units checked | unit 0: 64028 truncated exactly, 484 1 LSB low, 1024 saturated
+PASS: test 39 - Newton-Raphson reciprocal sweep
+  RECIP SWEEP 18-bit: 262144 inputs x 6 units checked | unit 0: 188580 truncated exactly, 8028 1 LSB low, 65536 saturated
+PASS: test 40 - Newton-Raphson reciprocal sweep
+  RECIP SWEEP 32-bit: 200000 inputs x 6 units checked | unit 0: 182753 truncated exactly, 0 1 LSB low, 17247 saturated
+
+3166431 checks run
+Tests: 40 passed, 0 failed
+PASS: all 40 tests

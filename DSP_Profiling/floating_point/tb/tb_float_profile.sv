@@ -7,9 +7,15 @@
 //   OPERATION_CODE   0 = IP add, 1 = IP multiply, 2 = IP divide,
 //                    3 = power x^n (IP multiplier),
 //                    4 = current design add, 5 = current design multiply,
-//                    6 = current design multiply-add (a*b + c)
+//                    6 = current design multiply-add (a*b + c),
+//                    7 = IP reciprocal (1/a), 8 = Newton-Raphson reciprocal (1/a)
 //   DATA_WIDTH_VALUE 16 (IEEE half) or 32 (IEEE single)
-//   LATENCY_VALUE    the IP's pipeline stages (1 for the current design)
+//   LATENCY_VALUE    the IP's pipeline stages (1 for the current design;
+//                    stages per multiply for the Newton-Raphson reciprocal)
+//   SEED_BITS_VALUE, ITERATIONS_VALUE   Newton-Raphson reciprocal only
+//
+// Reciprocals also get a sweep: every half-precision bit pattern (zeros,
+// subnormals, infinities and NaNs included), or 20000 random single ones.
 //
 // Cycles are counted as before: inputs applied, edge 1 captures them, count
 // edges until output_valid / done. Answers are compared with the exact
@@ -21,6 +27,14 @@ module tb_float_profile;
     localparam OPERATION  = `OPERATION_CODE;
     localparam DATA_WIDTH = `DATA_WIDTH_VALUE;
     localparam LATENCY    = `LATENCY_VALUE;
+`ifndef SEED_BITS_VALUE
+    `define SEED_BITS_VALUE 7
+`endif
+`ifndef ITERATIONS_VALUE
+    `define ITERATIONS_VALUE 1
+`endif
+    localparam SEED_BITS  = `SEED_BITS_VALUE;
+    localparam ITERATIONS = `ITERATIONS_VALUE;
 
     // Half: 5 exponent bits, 10 mantissa bits.  Single: 8 and 23.
     localparam EXPONENT_BITS = (DATA_WIDTH == 16) ? 5 : 8;
@@ -50,6 +64,17 @@ module tb_float_profile;
                 .clock(clock), .reset(reset), .start(input_valid),
                 .base(operand_a), .exponent(operand_b[4:0]),
                 .busy(), .done(output_valid), .result(result));
+        end else if (OPERATION == 7) begin : ip_reciprocal
+            float_ip_unit #(.DATA_WIDTH(DATA_WIDTH), .OPERANDS(1)) unit (
+                .clock(clock), .input_valid(input_valid),
+                .operand_a(operand_a), .operand_b(operand_b),
+                .output_valid(output_valid), .result(result));
+        end else if (OPERATION == 8) begin : newton_raphson_reciprocal
+            float_newton_raphson_reciprocal #(
+                .DATA_WIDTH(DATA_WIDTH), .SEED_BITS(SEED_BITS),
+                .ITERATIONS(ITERATIONS), .MULTIPLY_STAGES(LATENCY)) unit (
+                .clock(clock), .input_valid(input_valid), .operand(operand_a),
+                .output_valid(output_valid), .result(result));
         end else begin : current_design
             current_design_float_unit #(.OPERATION(OPERATION - 4)) unit (
                 .clock(clock), .input_valid(input_valid),
@@ -134,6 +159,69 @@ module tb_float_profile;
     endtask
 
     //--------------------------------------------------------------------------
+    // Reciprocal sweep: one bit pattern at a time. Special inputs must give
+    // the exact special result; normal ones must be within 1 ulp.
+    //--------------------------------------------------------------------------
+    localparam RECIPROCAL_CYCLES = (OPERATION == 7) ? LATENCY : 2 + 2 * ITERATIONS * LATENCY;
+
+    task automatic sweep_reciprocal();
+        integer index, input_count, wrong = 0, correctly_rounded = 0, normal_count = 0;
+        bit [DATA_WIDTH-1:0]    x;
+        bit [EXPONENT_BITS-1:0] exponent_field;
+        bit                     ok;
+        real                    exact, smallest_normal;
+        begin
+            smallest_normal = 2.0 ** (1 - EXPONENT_BIAS);
+            input_count     = (DATA_WIDTH == 16) ? 65536 : 20000;
+            test_count++;
+            for (index = 0; index < input_count; index++) begin
+                x = (DATA_WIDTH == 16) ? index : $urandom;
+                @(negedge clock);
+                operand_a   = x;
+                input_valid = 1;
+                @(posedge clock); #1 input_valid = 0;
+                cycles = 1;
+                while (!output_valid && cycles < 1000) begin
+                    @(posedge clock); #1 cycles++;
+                end
+
+                exponent_field = x[DATA_WIDTH-2 -: EXPONENT_BITS];
+                if (exponent_field == 0)                                     // 0 or subnormal -> infinity
+                    ok = result == {x[DATA_WIDTH-1], {EXPONENT_BITS{1'b1}}, {MANTISSA_BITS{1'b0}}};
+                else if (&exponent_field && x[MANTISSA_BITS-1:0] == 0)      // infinity -> 0
+                    ok = result == {x[DATA_WIDTH-1], {(DATA_WIDTH-1){1'b0}}};
+                else if (&exponent_field)                                    // NaN -> NaN
+                    ok = &result[DATA_WIDTH-2 -: EXPONENT_BITS] && result[MANTISSA_BITS-1:0] != 0;
+                else begin
+                    exact = 1.0 / to_real(x);
+                    normal_count++;
+                    if ((exact < 0 ? -exact : exact) < smallest_normal)      // below the normal range: 0 allowed
+                        ok = result[DATA_WIDTH-1] == x[DATA_WIDTH-1] &&
+                             (result[DATA_WIDTH-2:0] == 0 || close_enough(to_real(result), exact, 1));
+                    else
+                        ok = close_enough(to_real(result), exact, 1);
+                    if (ok && result == to_float(exact)) correctly_rounded++;
+                end
+                ok = ok && (cycles == RECIPROCAL_CYCLES);
+
+                if (!ok) begin
+                    wrong++;
+                    if (wrong <= 5)
+                        $display("FAIL: 1 / %h (%g) = %h (%g), exact %g | %0d cycles, expected %0d",
+                                 x, to_real(x), result, to_real(result), 1.0 / to_real(x), cycles, RECIPROCAL_CYCLES);
+                end
+            end
+            if (wrong == 0)
+                $display("PASS: sweep of %0d inputs, all correct (normal inputs within 1 ulp; %0d of %0d correctly rounded) | %0d cycles",
+                         input_count, correctly_rounded, normal_count, RECIPROCAL_CYCLES);
+            else begin
+                failed_test_count++;
+                $display("FAIL: sweep of %0d inputs, %0d wrong", input_count, wrong);
+            end
+        end
+    endtask
+
+    //--------------------------------------------------------------------------
     // Tests
     //--------------------------------------------------------------------------
     // Values every format can hold (half precision goes up to 65504)
@@ -160,6 +248,7 @@ module tb_float_profile;
                 // The MAC rounds the product before adding (not fused), so the
                 // expected answer uses the rounded product too
                 6:    run_one(a, b, c, to_real(to_float(a * b)) + c, 1, LATENCY, $sformatf("%g * %g + %g", a, b, c));
+                7, 8: run_one(a, 0, 0, 1.0 / a, 1, RECIPROCAL_CYCLES, $sformatf("1 / %g", a));
                 3: begin
                     // x^n with n = 2, 3, 5, 8; each multiply rounds, so allow n steps
                     n     = (test == 0) ? 2 : (test == 1) ? 3 : (test == 2) ? 5 : 8;
@@ -169,6 +258,8 @@ module tb_float_profile;
                 end
             endcase
         end
+
+        if (OPERATION == 7 || OPERATION == 8) sweep_reciprocal();
 
         $display("Tests: %0d passed, %0d failed", test_count - failed_test_count, failed_test_count);
         $finish;

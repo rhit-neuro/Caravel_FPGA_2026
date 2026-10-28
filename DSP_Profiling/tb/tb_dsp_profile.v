@@ -197,6 +197,61 @@ module tb_dsp_profile;
         .dividend(divide32_dividend), .divisor(divide32_divisor),
         .busy(), .done(divide_done[2]), .quotient(divide32_quotient), .divide_by_zero());
 
+    // 9. Reciprocal 1/x by Newton-Raphson (fully pipelined), 16/18/32-bit.
+    //    Per format: 2 settings (seed table bits + iterations) x 1-3 stages per
+    //    multiply = 6 units; unit index = setting * 3 + (stages - 1).
+    //      Q4.12 : setting 0 = 8-bit seed + 1 iteration,  setting 1 = 4-bit seed + 2
+    //      Q2.16 : setting 0 = 9-bit seed + 1 iteration,  setting 1 = 4-bit seed + 2
+    //      Q16.16: setting 0 = 8-bit seed + 2 iterations, setting 1 = 4-bit seed + 3
+    reg                recip16_input_valid = 0;
+    reg  signed [15:0] recip16_operand;
+    wire [5:0]         recip16_output_valid, recip16_overflow;
+    wire signed [15:0] recip16_result [0:5];
+
+    reg                recip18_input_valid = 0;
+    reg  signed [17:0] recip18_operand;
+    wire [5:0]         recip18_output_valid, recip18_overflow;
+    wire signed [17:0] recip18_result [0:5];
+
+    reg                recip32_input_valid = 0;
+    reg  signed [31:0] recip32_operand;
+    wire [5:0]         recip32_output_valid, recip32_overflow;
+    wire signed [31:0] recip32_result [0:5];
+
+    genvar setting;
+    generate
+        for (setting = 0; setting < 2; setting = setting + 1) begin : reciprocal_setting
+            for (stages = 1; stages <= 3; stages = stages + 1) begin : reciprocal_stages
+                newton_raphson_reciprocal #(
+                    .DATA_WIDTH(16), .FRACTION_BITS(12), .SEED_BITS(setting == 0 ? 8 : 4),
+                    .ITERATIONS(setting == 0 ? 1 : 2), .MULTIPLY_STAGES(stages)
+                ) unit_16bit (
+                    .clock(clock), .input_valid(recip16_input_valid), .operand(recip16_operand),
+                    .output_valid(recip16_output_valid[setting*3 + stages-1]),
+                    .result(recip16_result[setting*3 + stages-1]),
+                    .overflow(recip16_overflow[setting*3 + stages-1]));
+
+                newton_raphson_reciprocal #(
+                    .DATA_WIDTH(18), .FRACTION_BITS(16), .SEED_BITS(setting == 0 ? 9 : 4),
+                    .ITERATIONS(setting == 0 ? 1 : 2), .MULTIPLY_STAGES(stages)
+                ) unit_18bit (
+                    .clock(clock), .input_valid(recip18_input_valid), .operand(recip18_operand),
+                    .output_valid(recip18_output_valid[setting*3 + stages-1]),
+                    .result(recip18_result[setting*3 + stages-1]),
+                    .overflow(recip18_overflow[setting*3 + stages-1]));
+
+                newton_raphson_reciprocal #(
+                    .DATA_WIDTH(32), .FRACTION_BITS(16), .SEED_BITS(setting == 0 ? 8 : 4),
+                    .ITERATIONS(setting == 0 ? 2 : 3), .MULTIPLY_STAGES(stages)
+                ) unit_32bit (
+                    .clock(clock), .input_valid(recip32_input_valid), .operand(recip32_operand),
+                    .output_valid(recip32_output_valid[setting*3 + stages-1]),
+                    .result(recip32_result[setting*3 + stages-1]),
+                    .overflow(recip32_overflow[setting*3 + stages-1]));
+            end
+        end
+    endgenerate
+
     // 4. base^exponent by shift-and-add, Q2.16 (no pipeline options)
     reg                power_start = 0;
     reg  signed [17:0] power_base;
@@ -649,6 +704,207 @@ module tb_dsp_profile;
         end
     endtask
 
+    //--------------------------------------------------------------------------
+    // Reciprocal helpers
+    //--------------------------------------------------------------------------
+    // Iterations and expected cycles of reciprocal unit `unit` (0-5) of a format
+    function integer reciprocal_iterations(input integer width, input integer unit);
+        reciprocal_iterations = (unit < 3 ? 1 : 2) + (width == 32 ? 1 : 0);
+    endfunction
+
+    function integer reciprocal_cycles(input integer width, input integer unit);
+        reciprocal_cycles = 6 + 2 * reciprocal_iterations(width, unit) * (unit % 3 + 1);
+    endfunction
+
+    // Is `result` an acceptable 1/operand? Allowed: the exact reciprocal
+    // truncated toward zero, or 1 LSB smaller in magnitude; exactly the
+    // truncated value when it is exact (operand a power of two); saturation
+    // (with overflow) when it doesn't fit. Sets reciprocal_was_exact.
+    reg reciprocal_was_exact;
+
+    function reciprocal_is_correct(input integer width, input integer fraction_bits,
+                                   input signed [63:0] operand, input signed [63:0] result,
+                                   input overflow);
+        reg [127:0]       magnitude, quotient, limit;
+        reg signed [63:0] saturated, truncated, one_below;
+        reg               negative;
+        begin
+            negative  = operand < 0;
+            magnitude = negative ? -operand : operand;
+            limit     = (128'd1 << (width - 1)) - (negative ? 0 : 1);
+            saturated = negative ? -(64'sd1 << (width - 1)) : (64'sd1 << (width - 1)) - 1;
+            reciprocal_was_exact = 0;
+            if (magnitude == 0)
+                reciprocal_is_correct = overflow && result == (64'sd1 << (width - 1)) - 1;
+            else begin
+                quotient  = (128'd1 << (2 * fraction_bits)) / magnitude;   // truncated |1/x|
+                truncated = negative ? -$signed(quotient[63:0]) : $signed(quotient[63:0]);
+                one_below = negative ? -$signed(quotient[63:0] - 1) : $signed(quotient[63:0] - 1);
+                reciprocal_was_exact = (result == truncated);
+                if (quotient - 1 > limit)              // can't fit
+                    reciprocal_is_correct = overflow && result == saturated;
+                else if (quotient > limit)             // fits only if 1 LSB low
+                    reciprocal_is_correct = (overflow && result == saturated) || (!overflow && result == one_below);
+                else if ((magnitude & (magnitude - 1)) == 0)   // power of two: exact answer
+                    reciprocal_is_correct = !overflow && result == truncated;
+                else
+                    reciprocal_is_correct = !overflow && (result == truncated || result == one_below);
+            end
+        end
+    endfunction
+
+    // Operand number `index` of a sweep: every 16/18-bit value in order; for
+    // 32-bit, a few edge cases then pseudo-random values shifted right by
+    // 0-31 so every magnitude (every leading-zero count) is covered.
+    function signed [31:0] sweep_operand(input integer width, input integer index);
+        reg [31:0] mixed;
+        begin
+            if (width < 32)
+                sweep_operand = index;
+            else case (index)
+                0: sweep_operand = 0;              1: sweep_operand = 1;
+                2: sweep_operand = -1;             3: sweep_operand = 2;
+                4: sweep_operand = 3;              5: sweep_operand = 32'h0001_0000;   //  1.0
+                6: sweep_operand = 32'hFFFF_0000;  7: sweep_operand = 32'h7FFF_FFFF;   // -1.0, largest
+                8: sweep_operand = 32'h8000_0000;  9: sweep_operand = 32'h0000_8000;   // most negative, 0.5
+                default: begin
+                    mixed = index * 32'h9E37_79B1;
+                    mixed = mixed ^ (mixed >> 15);
+                    mixed = mixed * 32'h85EB_CA6B;
+                    mixed = mixed ^ (mixed >> 13);
+                    sweep_operand = $signed(mixed) >>> (index % 32);
+                end
+            endcase
+        end
+    endfunction
+
+    //--------------------------------------------------------------------------
+    // Reciprocal: one value into all 18 units, count cycles, check answers
+    //--------------------------------------------------------------------------
+    integer reciprocal_cycles_seen [0:17];   // format * 6 + unit (format 0/1/2 = 16/18/32-bit)
+    integer unit;
+
+    task test_reciprocal(input real value);
+        begin
+            failures_before_test = failure_count;
+
+            @(negedge clock);
+            recip16_operand = to_fixed_point(value, 12);
+            recip18_operand = to_fixed_point(value, 16);
+            recip32_operand = to_fixed_point(value, 16);
+            recip16_input_valid = 1;  recip18_input_valid = 1;  recip32_input_valid = 1;
+            for (unit = 0; unit < 18; unit = unit + 1)
+                reciprocal_cycles_seen[unit] = -1;
+
+            @(posedge clock); #1;
+            recip16_input_valid = 0;  recip18_input_valid = 0;  recip32_input_valid = 0;
+            for (cycle = 1; cycle <= 30; cycle = cycle + 1) begin
+                for (unit = 0; unit < 6; unit = unit + 1) begin
+                    if (recip16_output_valid[unit] && reciprocal_cycles_seen[unit] < 0) begin
+                        reciprocal_cycles_seen[unit] = cycle;
+                        check(reciprocal_is_correct(16, 12, recip16_operand, recip16_result[unit],
+                              recip16_overflow[unit]), "16-bit reciprocal: result correct");
+                    end
+                    if (recip18_output_valid[unit] && reciprocal_cycles_seen[6 + unit] < 0) begin
+                        reciprocal_cycles_seen[6 + unit] = cycle;
+                        check(reciprocal_is_correct(18, 16, recip18_operand, recip18_result[unit],
+                              recip18_overflow[unit]), "18-bit reciprocal: result correct");
+                    end
+                    if (recip32_output_valid[unit] && reciprocal_cycles_seen[12 + unit] < 0) begin
+                        reciprocal_cycles_seen[12 + unit] = cycle;
+                        check(reciprocal_is_correct(32, 16, recip32_operand, recip32_result[unit],
+                              recip32_overflow[unit]), "32-bit reciprocal: result correct");
+                    end
+                end
+                @(posedge clock); #1;
+            end
+
+            for (unit = 0; unit < 6; unit = unit + 1) begin
+                check(reciprocal_cycles_seen[unit]      == reciprocal_cycles(16, unit), "16-bit reciprocal: cycles");
+                check(reciprocal_cycles_seen[6 + unit]  == reciprocal_cycles(18, unit), "18-bit reciprocal: cycles");
+                check(reciprocal_cycles_seen[12 + unit] == reciprocal_cycles(32, unit), "32-bit reciprocal: cycles");
+            end
+            report_test("Newton-Raphson reciprocal");
+            $display("  RECIP 1/%8.4f = %9.4f (Q4.12%0s) %9.5f (Q2.16%0s) %11.5f (Q16.16%0s)",
+                     value, to_real(recip16_result[0], 12), recip16_overflow[0] ? ", saturated" : "",
+                     to_real(recip18_result[0], 16), recip18_overflow[0] ? ", saturated" : "",
+                     to_real(recip32_result[0], 16), recip32_overflow[0] ? ", saturated" : "");
+            for (unit = 0; unit < 18; unit = unit + 6)
+                $display("        %0d-bit cycles, stages 1/2/3: setting 0: %0d/%0d/%0d, setting 1: %0d/%0d/%0d",
+                         unit == 0 ? 16 : unit == 6 ? 18 : 32,
+                         reciprocal_cycles_seen[unit],     reciprocal_cycles_seen[unit + 1], reciprocal_cycles_seen[unit + 2],
+                         reciprocal_cycles_seen[unit + 3], reciprocal_cycles_seen[unit + 4], reciprocal_cycles_seen[unit + 5]);
+        end
+    endtask
+
+    //--------------------------------------------------------------------------
+    // Reciprocal sweep: a new operand every cycle into all 6 units of one
+    // format; each unit's answers come out in order, so its k-th answer is
+    // checked against sweep_operand(k).
+    //--------------------------------------------------------------------------
+    integer sweep_received [0:5];
+    integer sweep_exact_count, sweep_one_below_count, sweep_saturated_count;
+
+    task sweep_reciprocal(input integer width, input integer operand_count);
+        integer sent, fraction_bits;
+        reg     all_received;
+        reg signed [63:0] operand, result;
+        reg               overflow, output_ready;
+        begin
+            failures_before_test  = failure_count;
+            fraction_bits         = (width == 16) ? 12 : 16;
+            sweep_exact_count     = 0;
+            sweep_one_below_count = 0;
+            sweep_saturated_count = 0;
+            for (unit = 0; unit < 6; unit = unit + 1) sweep_received[unit] = 0;
+            sent         = 0;
+            all_received = 0;
+
+            while (!all_received) begin
+                @(negedge clock);
+                recip16_input_valid = (width == 16) && (sent < operand_count);
+                recip18_input_valid = (width == 18) && (sent < operand_count);
+                recip32_input_valid = (width == 32) && (sent < operand_count);
+                recip16_operand = sweep_operand(16, sent);
+                recip18_operand = sweep_operand(18, sent);
+                recip32_operand = sweep_operand(32, sent);
+                if (sent < operand_count) sent = sent + 1;
+
+                @(posedge clock); #1;
+                all_received = 1;
+                for (unit = 0; unit < 6; unit = unit + 1) begin
+                    case (width)
+                        16: begin output_ready = recip16_output_valid[unit]; overflow = recip16_overflow[unit]; result = recip16_result[unit]; end
+                        18: begin output_ready = recip18_output_valid[unit]; overflow = recip18_overflow[unit]; result = recip18_result[unit]; end
+                        default: begin output_ready = recip32_output_valid[unit]; overflow = recip32_overflow[unit]; result = recip32_result[unit]; end
+                    endcase
+                    if (output_ready) begin
+                        // sweep_operand gives the index for 16/18-bit; wrap it to the format
+                        operand = sweep_operand(width, sweep_received[unit]);
+                        if (width == 16) operand = $signed(operand[15:0]);
+                        if (width == 18) operand = $signed(operand[17:0]);
+                        check(reciprocal_is_correct(width, fraction_bits, operand, result, overflow),
+                              "reciprocal sweep: result correct");
+                        if (!reciprocal_is_correct(width, fraction_bits, operand, result, overflow)
+                            && failure_count - failures_before_test <= 5)
+                            $display("    unit %0d: 1/(raw %0d) gave raw %0d, overflow %0d", unit, operand, result, overflow);
+                        if (unit == 0) begin
+                            if (overflow)                  sweep_saturated_count = sweep_saturated_count + 1;
+                            else if (reciprocal_was_exact) sweep_exact_count     = sweep_exact_count + 1;
+                            else                           sweep_one_below_count = sweep_one_below_count + 1;
+                        end
+                        sweep_received[unit] = sweep_received[unit] + 1;
+                    end
+                    if (sweep_received[unit] < operand_count) all_received = 0;
+                end
+            end
+
+            report_test("Newton-Raphson reciprocal sweep");
+            $display("  RECIP SWEEP %0d-bit: %0d inputs x 6 units checked | unit 0: %0d truncated exactly, %0d 1 LSB low, %0d saturated",
+                     width, operand_count, sweep_exact_count, sweep_one_below_count, sweep_saturated_count);
+        end
+    endtask
+
     //==========================================================================
     // Test sequence
     //==========================================================================
@@ -704,6 +960,16 @@ module tb_dsp_profile;
         test_divide(-1.5,   1.25);
         test_divide( 0.75, -1.25);
         test_divide( 0.5,   1.5);
+
+        $display("\n--- 9. Reciprocal 1/x (Newton-Raphson), 16/18/32-bit ---");
+        test_reciprocal( 1.0);
+        test_reciprocal( 0.75);
+        test_reciprocal(-1.5);
+        test_reciprocal( 1.25);
+        test_reciprocal( 0.3);     // too big for Q2.16 (1/0.3 > 2): saturates there
+        sweep_reciprocal(16, 1 << 16);   // every 16-bit input
+        sweep_reciprocal(18, 1 << 18);   // every 18-bit input
+        sweep_reciprocal(32, 200000);
 
         // Summary in a form Veritas recognizes as a counter, not a failure
         // (a line like "0 failed checks" would be read as a FAIL marker)

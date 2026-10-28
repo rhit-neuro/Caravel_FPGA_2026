@@ -35,7 +35,10 @@ create_project float_sim $build_folder -part xck26-sfvc784-2LV-c
 add_files [list \
     [file join $rtl_folder float_ip_unit.v] \
     [file join $rtl_folder float_power.v] \
-    [file join $rtl_folder current_design_float_unit.v]]
+    [file join $rtl_folder current_design_float_unit.v] \
+    [file join $rtl_folder float_newton_raphson_reciprocal.v] \
+    [file normalize [file join $rtl_folder .. .. rtl newton_raphson_core.v]] \
+    [file normalize [file join $rtl_folder .. .. rtl nr_multiply_add.v]]]
 add_files [glob [file join $rtl_folder current_design *.v]]
 add_files -fileset sim_1 [list $tb_file]
 set_property top tb_float_profile [get_filesets sim_1]
@@ -47,14 +50,16 @@ set ip [get_ips float_under_test]
 
 set summary [open [file join $script_folder $results_file] w]
 foreach design $float_designs {
-    lassign $design name harness_unit test_code ip_operation precision latency
+    lassign $design name harness_unit test_code ip_operation precision latency seed_bits iterations
     set data_width [expr {$precision eq "Half" ? 16 : 32}]
+    if {$seed_bits eq ""} { set seed_bits 7; set iterations 1 }   ;# unused by the other designs
 
     if {$ip_operation ne "-"} {
         configure_float_ip $ip $ip_operation $precision $latency
         generate_target simulation [get_files float_under_test.xci]
     }
-    set_property verilog_define [list OPERATION_CODE=$test_code DATA_WIDTH_VALUE=$data_width LATENCY_VALUE=$latency] \
+    set_property verilog_define [list OPERATION_CODE=$test_code DATA_WIDTH_VALUE=$data_width LATENCY_VALUE=$latency \
+                                      SEED_BITS_VALUE=$seed_bits ITERATIONS_VALUE=$iterations] \
         [get_filesets sim_1]
 
     launch_simulation -simset sim_1 -mode behavioral

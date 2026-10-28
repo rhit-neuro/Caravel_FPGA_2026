@@ -7,6 +7,7 @@
 - Formats: half = 16-bit IEEE float, single = 32-bit IEEE float.
 - Add, multiply and divide use AMD's Floating-Point IP (add and multiply set to use DSPs; the divider never uses them). 
 - "Current design" = the synaptic module's own `FloatingAddition`, `FloatingMultiplication` and `LUT_MAC_Module`.
+- The reciprocal 1/x (IP and Newton-Raphson) has its own document: `Reciprocal_Profiling_Results.md`.
 
 ## Summary
 
@@ -47,8 +48,8 @@ A cell lists the stage options that pass at that clock, as their cycle counts. F
 
 ## Takeaways
 
-- **Float costs much more than fixed point.** A 1-cycle fixed-point add or multiply uses 1 DSP and no LUTs and passes at 600 MHz. A 1-cycle float add uses 2 DSPs plus 135–275 LUTs and only passes at 100 MHz. Float needs 6–11 stages to match fixed point's clock speeds.
-- **For float, pipeline stages decide the clock.** Unlike fixed point, a 1-stage float unit only reaches 100 MHz (multiply, add) or doesn't pass at all (divide). The maximum stage count reaches 600 MHz for every operation.
+- **Float costs much more than fixed point.** A 1-cycle fixed-point add or multiply uses 1 DSP and no LUTs and passes at 600 MHz. A 1-cycle float add uses 2 DSPs plus 141–275 LUTs and only passes at 100 MHz. Float needs 6–11 stages to match fixed point's clock speeds.
+- **For float, pipeline stages decide the clock.** Unlike fixed point, a 1-stage float unit only reaches 100 MHz (multiply, add) or doesn't pass at all (divide). The one exception is the half-precision IP reciprocal, which passes 600 MHz with 1 stage (see `Reciprocal_Profiling_Results.md`). The maximum stage count reaches 600 MHz for every operation.
 - **Division is the most expensive:** no DSPs, 755 LUTs at single precision, and at least 47 ns per result.
 - **The current synaptic design's float units are limited to about 100 MHz.** Its multiply-add (`LUT_MAC_Module`) fails at 100 MHz (about 10.7 ns path). The h/g accumulators chain two of these in one cycle, so their path is roughly twice as long (an estimate; not built). That's fine at today's 12 MHz clock (83 ns), but raising the clock would need pipelining, or the IP above.
 
@@ -106,3 +107,4 @@ D:/Vivado/2023.2/bin/vivado.bat -mode batch -nojournal -nolog -source run_float_
 python make_float_tables.py
 ```
 Add design-name prefixes (for example `divide`) to either script to run only some designs.
+Run `run_float_profile.tcl` from a folder with a short path: the IP's generated files go there, and a long path (around 150+ characters) makes synthesis fail with "cannot open Verilog file". Each build process needs about 3.5 GB of RAM.

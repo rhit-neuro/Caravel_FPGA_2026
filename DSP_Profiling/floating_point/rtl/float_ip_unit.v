@@ -2,8 +2,8 @@
 //==============================================================================
 // float_ip_unit
 //
-// One floating-point operation (add, multiply or divide) using AMD's
-// Floating-Point IP, with the same simple interface as the fixed-point
+// One floating-point operation (add, multiply, divide or reciprocal) using
+// AMD's Floating-Point IP, with the same simple interface as the fixed-point
 // modules: operands + input_valid in, result + output_valid out.
 //
 // The IP itself is the module "float_under_test". The build and simulation
@@ -11,13 +11,16 @@
 // latency), so this file never changes.
 //
 // Precision: DATA_WIDTH = 16 (IEEE half) or 32 (IEEE single).
+// OPERANDS = 1 for one-operand operations (reciprocal): operand_b is unused,
+// because that IP has no B input.
 //
 // Latency (clock cycles from input_valid to output_valid) is the IP's
 // C_Latency setting = its number of pipeline stages. The IP accepts new
 // operands every cycle no matter how many stages it has.
 //==============================================================================
 module float_ip_unit #(
-    parameter DATA_WIDTH = 32
+    parameter DATA_WIDTH = 32,
+    parameter OPERANDS   = 2
 )(
     input  wire                  clock,
     input  wire                  input_valid,   // high when operand_a/operand_b hold new values
@@ -28,13 +31,25 @@ module float_ip_unit #(
 );
     // The IP uses AXI-Stream names: s_axis_* = inputs, m_axis_* = output.
     // Both operands arrive together, so they share one valid signal.
-    float_under_test floating_point_ip (
-        .aclk                 (clock),
-        .s_axis_a_tvalid      (input_valid),
-        .s_axis_a_tdata       (operand_a),
-        .s_axis_b_tvalid      (input_valid),
-        .s_axis_b_tdata       (operand_b),
-        .m_axis_result_tvalid (output_valid),
-        .m_axis_result_tdata  (result)
-    );
+    generate
+        if (OPERANDS == 1) begin : one_operand
+            float_under_test floating_point_ip (
+                .aclk                 (clock),
+                .s_axis_a_tvalid      (input_valid),
+                .s_axis_a_tdata       (operand_a),
+                .m_axis_result_tvalid (output_valid),
+                .m_axis_result_tdata  (result)
+            );
+        end else begin : two_operands
+            float_under_test floating_point_ip (
+                .aclk                 (clock),
+                .s_axis_a_tvalid      (input_valid),
+                .s_axis_a_tdata       (operand_a),
+                .s_axis_b_tvalid      (input_valid),
+                .s_axis_b_tdata       (operand_b),
+                .m_axis_result_tvalid (output_valid),
+                .m_axis_result_tdata  (result)
+            );
+        end
+    endgenerate
 endmodule

@@ -19,6 +19,9 @@
 set kr260_part    xck26-sfvc784-2LV-c
 set script_folder [file dirname [file normalize [info script]]]
 set rtl_folder    [file normalize [file join $script_folder .. rtl]]
+# The Newton-Raphson reciprocal shares its core with the fixed-point one
+set shared_rtl    [list [file normalize [file join $script_folder .. .. rtl newton_raphson_core.v]] \
+                        [file normalize [file join $script_folder .. .. rtl nr_multiply_add.v]]]
 source [file join $script_folder float_designs.tcl]
 
 # Split the arguments into frequencies (numbers) and design-name prefixes
@@ -47,16 +50,21 @@ proc get_worst_slacks {} {
 }
 
 set results [open [file join $script_folder $results_name] w]
-puts $results "design,frequency_mhz,passes,setup_slack_ns,hold_slack_ns,pulse_width_slack_ns,dsp_count,lut_count"
+puts $results "design,frequency_mhz,passes,setup_slack_ns,hold_slack_ns,pulse_width_slack_ns,dsp_count,lut_count,bram_count"
 
 foreach design $float_designs {
-    lassign $design name harness_unit test_code ip_operation precision latency
+    lassign $design name harness_unit test_code ip_operation precision latency seed_bits iterations
     set data_width [expr {$precision eq "Half" ? 16 : 32}]
+    set extra_generics {}
+    if {$seed_bits ne ""} {
+        lappend extra_generics -generic SEED_BITS=$seed_bits -generic ITERATIONS=$iterations \
+                               -generic MULTIPLY_STAGES=$latency
+    }
 
     # --- Sources (and the IP, freshly configured) ----------------------------
     close_project -quiet
     create_project -in_memory -part $kr260_part
-    read_verilog [glob [file join $rtl_folder *.v] [file join $rtl_folder current_design *.v]]
+    read_verilog [concat [glob [file join $rtl_folder *.v] [file join $rtl_folder current_design *.v]] $shared_rtl]
     if {$ip_operation ne "-"} {
         set ip_folder [file normalize ip_build]
         file delete -force $ip_folder
@@ -68,14 +76,14 @@ foreach design $float_designs {
     }
 
     # --- Synthesize once (retried: it sometimes fails to start) --------------
-    for {set attempt 1} {$attempt <= 3} {incr attempt} {
+    for {set attempt 1} {$attempt <= 5} {incr attempt} {
         set failed [catch {
             synth_design -top float_timing_harness -part $kr260_part -mode out_of_context \
-                -generic UNIT=$harness_unit -generic DATA_WIDTH=$data_width
+                -generic UNIT=$harness_unit -generic DATA_WIDTH=$data_width {*}$extra_generics
         } error_message]
         if {!$failed} break
         puts "Synthesis attempt $attempt failed: $error_message"
-        if {$attempt == 3} { error $error_message }
+        if {$attempt == 5} { error $error_message }
     }
     set synthesized_design [file normalize synthesized.dcp]
     write_checkpoint -force $synthesized_design
@@ -93,8 +101,9 @@ foreach design $float_designs {
         set passes [expr {$setup_slack >= 0 && $hold_slack >= 0 && $pulse_width_slack >= 0 ? "yes" : "no"}]
         set dsp_count [llength [get_cells -hierarchical -filter {REF_NAME == DSP48E2}]]
         set lut_count [llength [get_cells -hierarchical -filter {REF_NAME =~ LUT*}]]
+        set bram_count [llength [get_cells -hierarchical -filter {REF_NAME =~ RAMB*}]]
 
-        puts $results "$name,$frequency_mhz,$passes,$setup_slack,$hold_slack,$pulse_width_slack,$dsp_count,$lut_count"
+        puts $results "$name,$frequency_mhz,$passes,$setup_slack,$hold_slack,$pulse_width_slack,$dsp_count,$lut_count,$bram_count"
         flush $results
         puts "PROFILE $frequency_mhz MHz $name passes=$passes setup=$setup_slack hold=$hold_slack pulse=$pulse_width_slack dsp=$dsp_count lut=$lut_count"
     }
